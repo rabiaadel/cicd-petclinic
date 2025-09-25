@@ -1,9 +1,9 @@
 pipeline {
-    agent any  // Runs on any agent; use label 'docker' if you set up Docker agents
-
-    tools {
-        jdk 'jdk17'
-        maven 'maven38'
+    agent {
+        docker {
+            image 'maven:3.9.6-eclipse-temurin-21'  // Has JDK + Maven
+            args  '-v /var/run/docker.sock:/var/run/docker.sock'  // Give container access to host docker
+        }
     }
 
     environment {
