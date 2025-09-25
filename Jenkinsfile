@@ -1,6 +1,15 @@
 pipeline {
     agent any
     environment {
+        SONAR_URL = 'http://localhost:9000'  // Adjust if remote
+        NEXUS_URL   = 'localhost:8083'  // Nexus Docker registry
+        NEXUS_REPO  = 'docker-hosted'
+        IMAGE_NAME  = 'spring-petclinic-app1'
+        DOCKER_IMAGE = "${NEXUS_URL}/${NEXUS_REPO}/${IMAGE_NAME}"
+        IMAGE_TAG   = "${env.BUILD_NUMBER}"
+        SONAR_TOKEN = credentials('sonar-token')  // From Jenkins creds
+        NEXUS_USER = credentials('nexus-creds')  // Username from creds
+        NEXUS_PASS = credentials('nexus-creds')  // Password (hidden)
         MAVEN_OPTS = "-Dmaven.repo.local=$WORKSPACE/.m2/repository"
     }
     stages {
@@ -13,21 +22,7 @@ pipeline {
                 }
             }
         }
-    }
-
-    environment {
-        SONAR_URL = 'http://localhost:9000'  // Adjust if remote
-        NEXUS_URL   = 'localhost:8083'  // Nexus Docker registry
-        NEXUS_REPO  = 'docker-hosted'
-        IMAGE_NAME  = 'spring-petclinic-app1'
-        DOCKER_IMAGE = "${NEXUS_URL}/${NEXUS_REPO}/${IMAGE_NAME}"
-        IMAGE_TAG   = "${env.BUILD_NUMBER}"
-        SONAR_TOKEN = credentials('sonar-token')  // From Jenkins creds
-        NEXUS_USER = credentials('nexus-creds')  // Username from creds
-        NEXUS_PASS = credentials('nexus-creds')  // Password (hidden)
-    }
-
-    stages {
+    
         stage('Checkout') {
             steps {
                 checkout scm  // Pulls from GitHub
