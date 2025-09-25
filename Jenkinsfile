@@ -1,5 +1,6 @@
 pipeline {
     agent any
+
     environment {
         SONAR_URL = 'http://localhost:9000'  // Adjust if remote
         NEXUS_URL   = 'localhost:8083'  // Nexus Docker registry
@@ -12,7 +13,13 @@ pipeline {
         NEXUS_PASS = credentials('nexus-creds')  // Password (hidden)
         MAVEN_OPTS = "-Dmaven.repo.local=$WORKSPACE/.m2/repository"
     }
+
     stages {
+        stage('Checkout') {
+            steps {
+                checkout scm  // Pulls from GitHub
+            }
+        }
         stage('Build') {
             steps {
                 script {
@@ -20,18 +27,6 @@ pipeline {
                         sh 'mvn clean compile'
                     }
                 }
-            }
-        }
-    
-        stage('Checkout') {
-            steps {
-                checkout scm  // Pulls from GitHub
-            }
-        }
-
-        stage('Build') {
-            steps {
-                sh 'mvn clean compile'  // Compile code
             }
         }
 
