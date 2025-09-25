@@ -5,7 +5,7 @@ services:
     image: spring-petclinic-app1
     build:
       context: .
-      dockerfile: Dockerfile.mine
+      dockerfile: Dockerfile
 
     ports:
       - "8090:8090"
