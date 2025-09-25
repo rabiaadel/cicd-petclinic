@@ -2,7 +2,7 @@ pipeline {
     agent any  // Runs on any agent; use label 'docker' if you set up Docker agents
 
     tools {
-        jdk 'jdk21'
+        jdk 'jdk17'
         maven 'maven38'
     }
 
