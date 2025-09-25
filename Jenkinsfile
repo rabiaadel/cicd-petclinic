@@ -1,8 +1,17 @@
 pipeline {
-    agent {
-        docker {
-            image 'maven:3.9.6-eclipse-temurin-21'  // Has JDK + Maven
-            args  '-v /var/run/docker.sock:/var/run/docker.sock'  // Give container access to host docker
+    agent any
+    environment {
+        MAVEN_OPTS = "-Dmaven.repo.local=$WORKSPACE/.m2/repository"
+    }
+    stages {
+        stage('Build') {
+            steps {
+                script {
+                    docker.image('maven:3.9.6-eclipse-temurin-21').inside('-v $WORKSPACE/.m2:/root/.m2') {
+                        sh 'mvn clean compile'
+                    }
+                }
+            }
         }
     }
 
