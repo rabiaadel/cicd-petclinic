@@ -1,0 +1,112 @@
+pipeline {
+    agent any  // Runs on any agent; use label 'docker' if you set up Docker agents
+
+    tools {
+        jdk 'jdk17'
+        maven 'maven38'
+    }
+
+    environment {
+        SONAR_URL = 'http://localhost:9000'  // Adjust if remote
+        NEXUS_URL = 'localhost:8083'  // Your Nexus Docker registry
+        DOCKER_IMAGE = "${NEXUS_URL}/petclinic"
+        IMAGE_TAG = "${env.BUILD_NUMBER}"  // Unique tag per build
+        SONAR_TOKEN = credentials('sonar-token')  // From Jenkins creds
+        NEXUS_USER = credentials('nexus-creds')  // Username from creds
+        NEXUS_PASS = credentials('nexus-creds')  // Password (hidden)
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm  // Pulls from GitHub
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'mvn clean compile'  // Compile code
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'mvn test'  // Run JUnit tests
+            }
+            post {
+                always {
+                    junit 'target/surefire-reports/*.xml'  // Publish test results in Jenkins UI
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {  // Uses global Sonar config
+                    sh """
+                        mvn sonar:sonar \
+                        -Dsonar.projectKey=petclinic \
+                        -Dsonar.host.url=${SONAR_URL} \
+                        -Dsonar.login=${SONAR_TOKEN}
+                    """
+                }
+            }
+        }
+
+        stage('Quality Gate') {  // Wait for Sonar to approve
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    sh """
+                        docker build -t ${DOCKER_IMAGE}:${IMAGE_TAG} .
+                        docker tag ${DOCKER_IMAGE}:${IMAGE_TAG} ${DOCKER_IMAGE}:latest
+                    """
+                }
+            }
+        }
+
+        stage('Push to Nexus') {
+            steps {
+                script {
+                    sh """
+                        echo ${NEXUS_PASS} | docker login ${NEXUS_URL} -u ${NEXUS_USER} --password-stdin
+                        docker push ${DOCKER_IMAGE}:${IMAGE_TAG}
+                        docker push ${DOCKER_IMAGE}:latest
+                    """
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    // Assumes target env has Docker Compose; for local: ssh or direct
+                    // For remote: Use 'ssh' step with creds (add SSH credential in Jenkins)
+                    sh 'docker-compose down'  // Stop existing
+                    sh 'docker-compose up -d --build'  // Rebuild/deploy stack
+                    // For remote deploy: sh 'ssh user@remote-host "cd /path/to/repo && docker-compose up -d"'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Clean up Docker images if needed
+            sh 'docker system prune -f'
+        }
+        success {
+            echo 'Pipeline succeeded! Check Grafana at http://localhost:3000'
+        }
+        failure {
+            echo 'Pipeline failed. Check logs.'
+        }
+    }
+}
