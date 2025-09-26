@@ -42,23 +42,26 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withDockerContainer('maven:3.9.3-eclipse-temurin-17') {
+                withSonarQubeEnv('SonarQube') {  // <- Wrap analysis with this
                     sh """
                         mvn sonar:sonar \
                         -Dsonar.projectKey=petclinic \
                         -Dsonar.host.url=http://172.19.208.1:9000 \
                         -Dsonar.login=${SONAR_TOKEN}
                     """
+                    }
                 }
             }
         }
-// sqp_e0c46e2de9c61b2642ce5cd01758ba761349400f
+
         stage('Quality Gate') {  // Wait for Sonar to approve
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+                waitForQualityGate abortPipeline: true
                 }
             }
         }
+
 
         stage('Build Docker Image') {
             steps {
