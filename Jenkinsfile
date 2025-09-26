@@ -39,22 +39,16 @@ pipeline {
                 }
             }
         }
-
         stage('SonarQube Analysis') {
             steps {
                 withDockerContainer('maven:3.9.3-eclipse-temurin-17') {
                 withSonarQubeEnv('SonarQube') {
-                    sh """
-                        mvn sonar:sonar \
-                        -Dsonar.projectKey=petclinic \
-                        -Dsonar.host.url=${SONAR_URL} \
-                        -Dsonar.login=${SONAR_TOKEN}
-                        """
+                    sh "mvn sonar:sonar -Dsonar.projectKey=petclinic"
                     }
                 }
             }
-        }
-
+        }   
+// sqp_e0c46e2de9c61b2642ce5cd01758ba761349400f
         stage('Quality Gate') {  // Wait for Sonar to approve
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
