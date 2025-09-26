@@ -42,9 +42,12 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withDockerContainer('maven:3.9.3-eclipse-temurin-17') {
-                withSonarQubeEnv('SonarQube') {
-                    sh "mvn sonar:sonar -Dsonar.projectKey=petclinic"
-                    }
+                    sh """
+                        mvn sonar:sonar \
+                        -Dsonar.projectKey=petclinic \
+                        -Dsonar.host.url=${SONAR_URL} \
+                        -Dsonar.login=${SONAR_TOKEN}
+                        """
                 }
             }
         }   
