@@ -40,16 +40,12 @@ pipeline {
             }
         }
         stage('SonarQube Analysis') {
-            environment {
-                SONAR_URL = 'http://172.19.208.1:9000'  // WSL2 host IP or remote SonarQube server
-                SONAR_TOKEN = credentials('sonar-token')  // Jenkins credentials for Sonar
-            }
             steps {
                 withDockerContainer('maven:3.9.3-eclipse-temurin-17') {
                     sh """
                         mvn sonar:sonar \
                         -Dsonar.projectKey=petclinic \
-                        -Dsonar.host.url=${SONAR_URL} \
+                        -Dsonar.host.url=http://172.19.208.1:9000 \
                         -Dsonar.login=${SONAR_TOKEN}
                     """
                 }
