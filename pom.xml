@@ -1,27 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>3.5.0</version>
-    <relativePath></relativePath>
+    <relativePath/>
   </parent>
 
   <groupId>org.springframework.samples</groupId>
   <artifactId>spring-petclinic</artifactId>
   <version>3.5.0-SNAPSHOT</version>
-
-  <name>petclinic</name>
+  <name>spring-petclinic</name>
+  <description>Demo project for Spring Boot</description>
 
   <properties>
-
     <!-- Generic properties -->
     <java.version>17</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <!-- Important for reproducible builds. Update using e.g. ./mvnw versions:set -DnewVersion=... -->
+    <!-- Important for reproducible builds -->
     <project.build.outputTimestamp>2024-11-28T14:37:52Z</project.build.outputTimestamp>
 
     <!-- Web dependencies -->
@@ -29,6 +30,7 @@
     <webjars-bootstrap.version>5.3.6</webjars-bootstrap.version>
     <webjars-font-awesome.version>4.7.0</webjars-font-awesome.version>
 
+    <!-- Build tools -->
     <checkstyle.version>10.25.0</checkstyle.version>
     <jacoco.version>0.8.13</jacoco.version>
     <libsass.version>0.3.4</libsass.version>
@@ -36,19 +38,14 @@
     <maven-checkstyle.version>3.6.0</maven-checkstyle.version>
     <nohttp-checkstyle.version>0.0.11</nohttp-checkstyle.version>
     <spring-format.version>0.0.46</spring-format.version>
-
   </properties>
 
   <dependencies>
-    <!-- Spring and Spring Boot dependencies -->
+    <!-- Spring Boot starters -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
-    <dependency>
-      <groupId>io.micrometer</groupId>
-      <artifactId>micrometer-registry-prometheus</artifactId>
-    </dependency>  
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-cache</artifactId>
@@ -69,13 +66,22 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-thymeleaf</artifactId>
     </dependency>
+
+    <!-- Observability and DB migration -->
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
-      <scope>test</scope>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-prometheus</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-mysql</artifactId>
     </dependency>
 
-    <!-- Databases - Uses H2 by default -->
+    <!-- Database drivers -->
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
@@ -119,6 +125,7 @@
       <version>${webjars-font-awesome.version}</version>
     </dependency>
 
+    <!-- Development and Testing -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-devtools</artifactId>
@@ -145,15 +152,18 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- Misc -->
     <dependency>
       <groupId>jakarta.xml.bind</groupId>
       <artifactId>jakarta.xml.bind-api</artifactId>
     </dependency>
 
+    <!-- NOTE: sonar-maven-plugin belongs in plugins, not dependencies -->
   </dependencies>
 
   <build>
     <plugins>
+      <!-- Enforce Java version -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
@@ -166,7 +176,7 @@
             <configuration>
               <rules>
                 <requireJavaVersion>
-                  <message>This build requires at least Java ${java.version}, update your JVM, and run the build again</message>
+                  <message>This build requires at least Java ${java.version}</message>
                   <version>${java.version}</version>
                 </requireJavaVersion>
               </rules>
@@ -174,19 +184,30 @@
           </execution>
         </executions>
       </plugin>
+
+      <!-- Code formatting -->
       <plugin>
         <groupId>io.spring.javaformat</groupId>
         <artifactId>spring-javaformat-maven-plugin</artifactId>
         <version>${spring-format.version}</version>
         <executions>
           <execution>
+            <phase>validate</phase>
             <goals>
               <goal>validate</goal>
             </goals>
-            <phase>validate</phase>
           </execution>
         </executions>
       </plugin>
+
+      <!-- SonarQube -->
+      <plugin>
+        <groupId>org.sonarsource.scanner.maven</groupId>
+        <artifactId>sonar-maven-plugin</artifactId>
+        <version>3.9.1.2184</version>
+      </plugin>
+
+      <!-- Code style -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
@@ -206,10 +227,10 @@
         <executions>
           <execution>
             <id>nohttp-checkstyle-validation</id>
+            <phase>validate</phase>
             <goals>
               <goal>check</goal>
             </goals>
-            <phase>validate</phase>
             <configuration>
               <configLocation>src/checkstyle/nohttp-checkstyle.xml</configLocation>
               <sourceDirectories>${basedir}</sourceDirectories>
@@ -220,17 +241,19 @@
           </execution>
         </executions>
       </plugin>
+
+      <!-- GraalVM native builds -->
       <plugin>
         <groupId>org.graalvm.buildtools</groupId>
         <artifactId>native-maven-plugin</artifactId>
       </plugin>
+
+      <!-- Spring Boot plugin -->
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <executions>
           <execution>
-            <!-- Spring Boot Actuator displays build-related information
-              if a META-INF/build-info.properties file is present -->
             <goals>
               <goal>build-info</goal>
             </goals>
@@ -245,6 +268,8 @@
           </execution>
         </executions>
       </plugin>
+
+      <!-- Code coverage -->
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
@@ -257,16 +282,15 @@
           </execution>
           <execution>
             <id>report</id>
+            <phase>prepare-package</phase>
             <goals>
               <goal>report</goal>
             </goals>
-            <phase>prepare-package</phase>
           </execution>
         </executions>
       </plugin>
 
-      <!-- Spring Boot Actuator displays build-related information if a git.properties file is
-      present at the classpath -->
+      <!-- Git commit info -->
       <plugin>
         <groupId>io.github.git-commit-id</groupId>
         <artifactId>git-commit-id-maven-plugin</artifactId>
@@ -275,21 +299,15 @@
           <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>
         </configuration>
       </plugin>
-      <!-- Spring Boot Actuator displays sbom-related information if a CycloneDX SBOM file is
-      present at the classpath -->
+
+      <!-- SBOM (CycloneDX) -->
       <plugin>
-        <?m2e ignore?>
         <groupId>org.cyclonedx</groupId>
         <artifactId>cyclonedx-maven-plugin</artifactId>
       </plugin>
-      <plugin>
-          <groupId>org.sonarsource.scanner.maven</groupId>
-          <artifactId>sonar-maven-plugin</artifactId>
-          <version>4.0.0.4121</version>
-      </plugin>
-
     </plugins>
   </build>
+
   <licenses>
     <license>
       <name>Apache License, Version 2.0</name>
@@ -297,44 +315,50 @@
     </license>
   </licenses>
 
+  <!-- Distribution management must be at top-level -->
+  <distributionManagement>
+    <repository>
+      <id>nexus-releases</id>
+      <url>http://nexus:8081/repository/maven-releases/</url>
+    </repository>
+    <snapshotRepository>
+      <id>nexus-snapshots</id>
+      <url>http://nexus:8081/repository/maven-snapshots/</url>
+    </snapshotRepository>
+  </distributionManagement>
+
   <repositories>
     <repository>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
       <id>spring-snapshots</id>
-      <name>Spring Snapshots</name>
       <url>https://repo.spring.io/snapshot</url>
+      <snapshots><enabled>true</enabled></snapshots>
     </repository>
     <repository>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
+      <id>nexus</id>
+      <url>http://nexus:8081/repository/maven-public/</url>
+    </repository>
+    <repository>
       <id>spring-milestones</id>
-      <name>Spring Milestones</name>
       <url>https://repo.spring.io/milestone</url>
+      <snapshots><enabled>false</enabled></snapshots>
     </repository>
   </repositories>
+
   <pluginRepositories>
     <pluginRepository>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
       <id>spring-snapshots</id>
-      <name>Spring Snapshots</name>
       <url>https://repo.spring.io/snapshot</url>
+      <snapshots><enabled>true</enabled></snapshots>
     </pluginRepository>
     <pluginRepository>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
       <id>spring-milestones</id>
-      <name>Spring Milestones</name>
       <url>https://repo.spring.io/milestone</url>
+      <snapshots><enabled>false</enabled></snapshots>
     </pluginRepository>
   </pluginRepositories>
 
   <profiles>
+    <!-- Profile for CSS compilation -->
     <profile>
       <id>css</id>
       <build>
@@ -345,11 +369,10 @@
             <executions>
               <execution>
                 <id>unpack</id>
+                <phase>generate-resources</phase>
                 <goals>
                   <goal>unpack</goal>
                 </goals>
-                <?m2e execute onConfiguration,onIncremental?>
-                <phase>generate-resources</phase>
                 <configuration>
                   <artifactItems>
                     <artifactItem>
@@ -375,17 +398,18 @@
             </configuration>
             <executions>
               <execution>
-                <?m2e execute onConfiguration,onIncremental?>
+                <phase>generate-resources</phase>
                 <goals>
                   <goal>compile</goal>
                 </goals>
-                <phase>generate-resources</phase>
               </execution>
             </executions>
           </plugin>
         </plugins>
       </build>
     </profile>
+
+    <!-- Eclipse M2E integration -->
     <profile>
       <id>m2e</id>
       <activation>
@@ -396,8 +420,6 @@
       <build>
         <pluginManagement>
           <plugins>
-            <!-- This plugin's configuration is used to store Eclipse m2e settings
-              only. It has no influence on the Maven build itself. -->
             <plugin>
               <groupId>org.eclipse.m2e</groupId>
               <artifactId>lifecycle-mapping</artifactId>
@@ -414,9 +436,7 @@
                           <goal>check</goal>
                         </goals>
                       </pluginExecutionFilter>
-                      <action>
-                        <ignore></ignore>
-                      </action>
+                      <action><ignore/></action>
                     </pluginExecution>
                     <pluginExecution>
                       <pluginExecutionFilter>
@@ -427,9 +447,7 @@
                           <goal>build-info</goal>
                         </goals>
                       </pluginExecutionFilter>
-                      <action>
-                        <ignore></ignore>
-                      </action>
+                      <action><ignore/></action>
                     </pluginExecution>
                     <pluginExecution>
                       <pluginExecutionFilter>
@@ -440,9 +458,7 @@
                           <goal>validate</goal>
                         </goals>
                       </pluginExecutionFilter>
-                      <action>
-                        <ignore></ignore>
-                      </action>
+                      <action><ignore/></action>
                     </pluginExecution>
                   </pluginExecutions>
                 </lifecycleMappingMetadata>
