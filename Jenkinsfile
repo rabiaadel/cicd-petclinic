@@ -32,7 +32,9 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh 'mvn test -Dcheckstyle.skip=true'  // Run JUnit tests
+                withEnv(["HOME=$WORKSPACE"]) {
+                    sh 'mvn clean compile'
+                }        // Run JUnit tests
             }
             post {
                 always {
