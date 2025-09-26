@@ -42,25 +42,20 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withDockerContainer('maven:3.9.3-eclipse-temurin-17') {
-                withSonarQubeEnv('SonarQube') {  // <- Wrap analysis with this
-                    sh """
-                        mvn sonar:sonar \
-                        -Dsonar.projectKey=petclinic \
-                        -Dsonar.host.url=http://172.19.208.1:9000 \
-                        -Dsonar.login=${SONAR_TOKEN}
-                    """
-                    }
+                withSonarQubeEnv('SonarQube') {  // <- must match the Jenkins configuration
+                    sh 'mvn clean verify sonar:sonar'
                 }
             }
         }
+    }
 
-        stage('Quality Gate') {  // Wait for Sonar to approve
+        stage('Quality Gate') {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
                 waitForQualityGate abortPipeline: true
-                }
             }
         }
+    }
 
 
         stage('Build Docker Image') {
