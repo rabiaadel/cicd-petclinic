@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        SONAR_URL = 'http://localhost:9000'  // Adjust if remote
-        NEXUS_URL   = 'localhost:8083'  // Nexus Docker registry
+        SONAR_URL = 'http://172.19.209.214:9000'  // Adjust if remote
+        NEXUS_URL   = '172.19.209.214:8083'  // Nexus Docker registry
         NEXUS_REPO  = 'docker-hosted'
         IMAGE_NAME  = 'spring-petclinic-app1'
         DOCKER_IMAGE = "${NEXUS_URL}/${NEXUS_REPO}/${IMAGE_NAME}"
@@ -41,7 +41,7 @@ pipeline {
         }
         stage('SonarQube Analysis') {
             steps {
-                withDockerContainer('maven:3.9.3-eclipse-temurin-17', '--network host') {
+                withDockerContainer('maven:3.9.3-eclipse-temurin-17') {
                 withSonarQubeEnv('SonarQube') {
                     sh "mvn sonar:sonar -Dsonar.projectKey=petclinic"
                     }
