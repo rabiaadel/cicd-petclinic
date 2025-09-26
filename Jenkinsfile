@@ -32,13 +32,10 @@ pipeline {
 
         stage('Test') {
             steps {
-                withEnv(["HOME=$WORKSPACE"]) {
-                    sh 'mvn clean compile'
-                }        // Run JUnit tests
-            }
-            post {
-                always {
-                    junit 'target/surefire-reports/*.xml'  // Publish test results in Jenkins UI
+                script {
+                docker.image('maven:3.9.6-eclipse-temurin-21').inside {
+                    sh 'mvn test'
+                    }
                 }
             }
         }
