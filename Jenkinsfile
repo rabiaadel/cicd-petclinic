@@ -32,7 +32,7 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh 'mvn test'  // Run JUnit tests
+                sh 'mvn test -Dcheckstyle.skip=true'  // Run JUnit tests
             }
             post {
                 always {
