@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        SONAR_URL = 'http://172.19.209.214:9000'  // Adjust if remote
-        NEXUS_URL   = '172.19.209.214:8083'  // Nexus Docker registry
+        SONAR_URL = 'http://172.19.208.1:9000'  // Adjust if remote
+        NEXUS_URL   = '172.19.208.1:8083'  // Nexus Docker registry
         NEXUS_REPO  = 'docker-hosted'
         IMAGE_NAME  = 'spring-petclinic-app1'
         DOCKER_IMAGE = "${NEXUS_URL}/${NEXUS_REPO}/${IMAGE_NAME}"
