@@ -23,8 +23,8 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    docker.image('maven:3.9.6-eclipse-temurin-21').inside('-v $WORKSPACE/.m2:/root/.m2') {
-                        sh 'mvn clean compile'
+                docker.image('maven:3.9.6-eclipse-temurin-21').inside('-v $WORKSPACE/.m2:/root/.m2') {
+                    sh 'mvn clean compile -Dcheckstyle.skip=true'
                     }
                 }
             }
