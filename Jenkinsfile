@@ -41,7 +41,7 @@ pipeline {
         }
         stage('SonarQube Analysis') {
             steps {
-                withDockerContainer('maven:3.9.3-eclipse-temurin-17') {
+                withDockerContainer('maven:3.9.3-eclipse-temurin-17', '--network host') {
                 withSonarQubeEnv('SonarQube') {
                     sh "mvn sonar:sonar -Dsonar.projectKey=petclinic"
                     }
