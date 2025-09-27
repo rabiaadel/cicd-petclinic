@@ -130,6 +130,15 @@
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
           </dependency>
+          <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-jcache</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>com.github.ben-manes.caffeine</groupId>
+          <artifactId>caffeine</artifactId>
+        </dependency>
+
 
 <!-- AssertJ -->
         <dependency>
