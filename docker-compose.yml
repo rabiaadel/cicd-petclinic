@@ -32,7 +32,6 @@ services:
 
   mysql:
     image: mysql:9.2
-    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: rootpass
       MYSQL_DATABASE: petclinic
@@ -51,14 +50,7 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-          cpus: '1.0'
-    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
-
-
+    restart: unless-stopped
   postgres-sonarqube:
     image: postgres:17.5
     restart: unless-stopped
@@ -111,6 +103,7 @@ services:
     image: sonatype/nexus3:latest
     ports:
       - "8081:8081"
+      - "8083:8083" # hosted-docker artifact repo
     volumes:
       - nexus_data:/nexus-data
     networks:
