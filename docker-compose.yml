@@ -80,7 +80,6 @@ services:
     depends_on: 
       - prometheus
 volumes:
-  nexus_data:
   grafana-storage:
   prometheus-data:
   mysql_data:
