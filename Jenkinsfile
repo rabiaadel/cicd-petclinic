@@ -52,7 +52,7 @@ pipeline {
             steps {
                 sh '''
                   docker rm -f petclinic-app || true
-                  docker run -d --name petclinic-app -p 8090:8090 $DOCKERHUB_REPO:latest
+                  docker run -d --name petclinic-app -p 8091:8091 $DOCKERHUB_REPO:latest
                 '''
             }
         }
