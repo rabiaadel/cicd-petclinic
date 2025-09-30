@@ -49,3 +49,11 @@ out/
 _site/
 *.css
 !petclinic.css
+# Ignore Terraform stuff only in infra/
+infra/.terraform/
+infra/*.tfstate
+infra/*.tfstate.*
+infra/crash.log
+infra/terraform.tfstate.backup
+infra/.terraform.lock.hcl
+
