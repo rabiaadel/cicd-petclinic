@@ -4,10 +4,10 @@ resource "aws_security_group" "app_sg" {
   vpc_id = aws_vpc.main.id
 
   ingress {
-    from_port   = 8092
-    to_port     = 8092
+    from_port   = 8090
+    to_port     = 8090
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # open for testing (can restrict later)
+    cidr_blocks = ["0.0.0.0/0"] 
   }
 
   ingress {
@@ -15,6 +15,7 @@ resource "aws_security_group" "app_sg" {
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+   ## 203.0.113.0/32
   }
 
   egress {

@@ -1,33 +1,32 @@
-# Build stage
+# ===== Build Stage =====
 FROM bellsoft/liberica-runtime-container:jdk-21-stream-musl AS build
-
 WORKDIR /app
 
-# Copy Maven wrapper and settings
-COPY mvnw .
+# Copy Maven wrapper & settings
+COPY mvnw ./
 COPY .mvn .mvn
-COPY pom.xml .
+COPY pom.xml ./
 
-# Ensure mvnw is executable
 RUN chmod +x mvnw
 
-# Pre-download dependencies for better caching
+# Pre-fetch dependencies for caching
 RUN ./mvnw dependency:go-offline -B --no-transfer-progress -DskipTests=true
 
-# Copy source code
+# Copy source code and build
 COPY src src
-
-# Build application
 RUN ./mvnw clean package -DskipTests --no-transfer-progress
 
-# Runtime stage
+# ===== Runtime Stage =====
 FROM bellsoft/liberica-runtime-container:jre-21-stream-musl
-
 WORKDIR /app
 
-# Copy JAR from build stage (assuming only one final JAR is produced)
-COPY --from=build /app/target/*-SNAPSHOT.jar app.jar
+# Add non-root user
+RUN adduser -D spring
+USER spring
 
-EXPOSE 8090
+# Copy final JAR
+COPY --from=build /app/target/*.jar app.jar
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "app.jar"]
