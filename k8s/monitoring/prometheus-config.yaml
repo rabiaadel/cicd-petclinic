@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: monitoring
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+
+    scrape_configs:
+      - job_name: 'spring-petclinic'
+        metrics_path: '/actuator/prometheus'
+        static_configs:
+          - targets:
+              - 'petclinic-service.petclinic.svc.cluster.local:8090'

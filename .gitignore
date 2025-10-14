@@ -50,6 +50,12 @@ _site/
 *.css
 !petclinic.css
 # Ignore Terraform stuff only in infra/
+infra/environments/dev/.terraform/*
+infra/envinronments/dev/*.tfstate
+infra/envinronments/dev/*.tfstate.*
+infra/envinronments/dev/crash.log
+infra/envinronments/dev/terraform.tfstate.backup
+infra/envinronments/dev/.terraform.lock.hcl
 infra/.terraform/
 infra/*.tfstate
 infra/*.tfstate.*

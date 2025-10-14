@@ -1,15 +1,112 @@
-name: spring-petclinic CI/CD by me
+name: CI/CD Pipeline - PetClinic
+
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
   pull_request:
-    branches:
-      - main
+
 jobs:
-  build:
+  build-test-scan:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-  
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build with Maven
+        run: ./mvnw clean package -DskipTests=false --no-transfer-progress
+
+      - name: SonarQube scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          ./mvnw sonar:sonar \
+            -Dsonar.projectKey=petclinic \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
+      - name: Build Docker image
+        run: docker build -t rabiaadel/petclinic-app:${{ github.sha }} .
+
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+      - name: Push image to Docker Hub
+        run: |
+          docker tag rabiaadel/petclinic-app:${{ github.sha }} rabiaadel/petclinic-app:latest
+          docker push rabiaadel/petclinic-app:${{ github.sha }}
+          docker push rabiaadel/petclinic-app:latest
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: 'latest'
+
+      - name: Update image in Kubernetes manifest
+        run: |
+          sed -i "s|image: .*|image: $IMAGE_NAME:latest|g" k8s/app/deployment.yaml
+
+      - name: Commit updated deployment
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add k8s/app/deployment.yaml
+          git commit -m "Update image to latest"
+          git push
+
+      - name: Sync Argo CD
+        uses: clowdhaus/argo-cd-action@v2
+        with:
+          argocd_server: https://localhost:30096
+          argocd_token: ${{ secrets.ARGOCD_TOKEN }}
+          action: sync
+          app: petclinic
+
+  # deploy:
+  #   needs: build-test-scan
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     AWS_REGION: ${{ secrets.AWS_REGION }}
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
+
+  #     - name: Setup Terraform
+  #       uses: hashicorp/setup-terraform@v3
+  #       with:
+  #         terraform_version: 1.8.5
+
+  #     - name: Configure AWS credentials
+  #       uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: ${{ secrets.AWS_REGION }}
+
+  #     - name: Terraform Init
+  #       working-directory: infra/environments/dev
+  #       run: terraform init
+
+  #     - name: Terraform Apply
+  #       working-directory: infra/environments/dev
+  #       run: terraform apply -auto-approve -var "image_url=rabiaadel/petclinic-app:${{ github.sha }}"
