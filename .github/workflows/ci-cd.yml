@@ -38,7 +38,7 @@ jobs:
         run: |
           ./mvnw sonar:sonar \
             -Dsonar.projectKey=petclinic \
-            -Dsonar.host.url=
+            -Dsonar.host.url=argocd-server.argocd.svc.cluster.local:30093 \
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
       - name: Build Docker image
@@ -76,7 +76,7 @@ jobs:
       - name: Trigger ArgoCD Sync
         uses: clowdhaus/argo-cd-action@v2
         with:
-          argocd_server: svc-lo
+          argocd_server: argocd-server.argocd.svc.cluster.local
           argocd_token: ${{ secrets.ARGOCD_TOKEN }}
           action: sync
           app: petclinic
