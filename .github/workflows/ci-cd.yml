@@ -5,9 +5,13 @@ on:
     branches: [ "main" ]
   pull_request:
 
+env:
+  IMAGE_NAME: rabiaadel/petclinic-app
+
 jobs:
   build-test-scan:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -34,33 +38,28 @@ jobs:
         run: |
           ./mvnw sonar:sonar \
             -Dsonar.projectKey=petclinic \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.host.url=
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
       - name: Build Docker image
-        run: docker build -t rabiaadel/petclinic-app:${{ github.sha }} .
-
+        run: docker build -t $IMAGE_NAME:${{ github.sha }} .
 
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
       - name: Push image to Docker Hub
         run: |
-          docker tag rabiaadel/petclinic-app:${{ github.sha }} rabiaadel/petclinic-app:latest
-          docker push rabiaadel/petclinic-app:${{ github.sha }}
-          docker push rabiaadel/petclinic-app:latest
+          docker tag $IMAGE_NAME:${{ github.sha }} $IMAGE_NAME:latest
+          docker push $IMAGE_NAME:${{ github.sha }}
+          docker push $IMAGE_NAME:latest
+
   deploy:
     runs-on: ubuntu-latest
-    needs: build
+    needs: build-test-scan
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v4
-        with:
-          version: 'latest'
 
       - name: Update image in Kubernetes manifest
         run: |
@@ -74,13 +73,14 @@ jobs:
           git commit -m "Update image to latest"
           git push
 
-      - name: Sync Argo CD
+      - name: Trigger ArgoCD Sync
         uses: clowdhaus/argo-cd-action@v2
         with:
-          argocd_server: https://localhost:30096
+          argocd_server: svc-lo
           argocd_token: ${{ secrets.ARGOCD_TOKEN }}
           action: sync
           app: petclinic
+
 
   # deploy:
   #   needs: build-test-scan

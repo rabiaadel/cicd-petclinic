@@ -19,6 +19,9 @@ spec:
     metadata:
       labels:
         app: petclinic
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8090"
     spec:
       containers:
         - name: petclinic
