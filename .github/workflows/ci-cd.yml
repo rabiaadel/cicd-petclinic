@@ -79,10 +79,11 @@ jobs:
           git commit -m "Update image to latest"
           git push
 
-      - name: Trigger ArgoCD Sync
-        uses: clowdhaus/argo-cd-action@v2
+      - name: Sync Argo CD
+        uses: clowdhaus/argo-cd-action@v1
         with:
-          argocd_server: https://127.0.0.1:43681/
+          argocd_server: argocd-server.argocd.svc.cluster.local
+          argocd_username: admin
           argocd_token: ${{ secrets.ARGOCD_TOKEN }}
           action: sync
           app: petclinic
